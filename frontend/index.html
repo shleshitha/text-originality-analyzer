@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Intelligent Text Analyzer</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<section class="hero">
+  <h1>👋 Welcome to Intelligent Text Analyzer</h1>
+  <p class="subtitle">
+    An intelligent system to detect plagiarism, identify AI-generated text,
+    and provide meaningful feedback to improve originality.
+  </p>
+
+  <div class="features">
+    <div class="feature-card">🧠 AI Text Detection</div>
+    <div class="feature-card">📄 Plagiarism Analysis</div>
+    <div class="feature-card">💡 Smart Feedback</div>
+    <div class="feature-card">📂 File Upload Support</div>
+  </div>
+
+  <div class="limits">
+    ✏️ Max text length: <b>3000 characters</b><br>
+    📁 File upload: <b>.txt only (max 100 KB)</b>
+  </div>
+
+  <button class="primary-btn" onclick="scrollToInput()">Try It 🚀</button>
+</section>
+
+<section class="input-section" id="inputSection">
+  <h2>✍️ Enter Your Content</h2>
+
+  <textarea id="textInput" maxlength="3000"
+    placeholder="Paste your text here (max 3000 characters)..."></textarea>
+
+  <div class="upload-box">
+    <label for="fileInput">📂 Upload .txt file (Max 100 KB)</label>
+    <input type="file" id="fileInput" accept=".txt">
+  </div>
+
+ <div style="display:flex; gap:15px; justify-content:center;">
+  <button class="analyze-btn" onclick="analyze()">Analyze 🔍</button>
+  <button class="analyze-btn" style="background:#e53935" onclick="clearInput()">
+    Clear ✖
+  </button>
+</div>
+
+</section>
+
+<!-- RESULT SECTION -->
+<section class="result-section" id="resultSection">
+  <div class="result-header">
+    <h2>📊 Feedback Analysis</h2>
+    <button class="toggle-btn" onclick="toggleFeedback()">
+      Hide Feedback ▲
+    </button>
+  </div>
+
+  <!-- SCORES -->
+  <div id="scoreBox"></div>
+
+  <!-- FEEDBACK -->
+  <div id="feedbackContent">
+    <div class="feedback-box">
+      <h3>💡 Feedback</h3>
+      <ul id="feedbackList"></ul>
+    </div>
+
+    <!-- 🔍 Highlight Sections -->
+    <div class="highlight-container">
+      <div class="highlight-column">
+        <div class="highlight-header" onclick="toggleSection('plagSection')">
+          🔴 Plagiarised Content <span>▼</span>
+        </div>
+        <div class="highlight-body" id="plagSection"></div>
+      </div>
+
+      <div class="highlight-column">
+        <div class="highlight-header" onclick="toggleSection('aiSection')">
+          🤖 AI-Generated Content <span>▼</span>
+        </div>
+        <div class="highlight-body" id="aiSection"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script src="script.js"></script>
+<!-- 👥 TEAM FOOTER -->
+<footer class="team-footer">
+  <p><strong>Project By</strong></p>
+  <p>Shleshitha Cheekati • Pakkurthi Ravi Kiran • Junuthula Shashidar</p>
+</footer>
+
+</body>
+</html>
