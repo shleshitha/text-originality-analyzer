@@ -39,11 +39,14 @@ function analyze() {
   .then(res => res.json())
   .then(data => {
 
+    // Store result globally for download
+    window.lastResult = data;
+    window.lastInputText = text;
+
     const resultSection = document.getElementById("resultSection");
     const feedbackContent = document.getElementById("feedbackContent");
     const toggleBtn = document.querySelector(".toggle-btn");
 
-    /* FORCE VISIBILITY */
     resultSection.style.display = "block";
     feedbackContent.style.display = "block";
     toggleBtn.innerHTML = "Hide Feedback ▲";
@@ -124,7 +127,7 @@ function toggleFeedback() {
   }
 }
 
-/* ---------- TOGGLE ACCORDION SECTIONS ---------- */
+/* ---------- TOGGLE ACCORDION ---------- */
 function toggleSection(sectionId) {
   const section = document.getElementById(sectionId);
   const header = section.previousElementSibling;
@@ -138,16 +141,54 @@ function toggleSection(sectionId) {
   }
 }
 
-/* ---------- CLEAR INPUT (FIXED) ---------- */
+/* ---------- CLEAR INPUT ---------- */
 function clearInput() {
   document.getElementById("textInput").value = "";
   document.getElementById("fileInput").value = "";
-
-  // Hide result & feedback
   document.getElementById("resultSection").style.display = "none";
   document.getElementById("feedbackContent").style.display = "none";
+}
 
-  // Clear highlights
-  document.getElementById("plagSection").innerHTML = "";
-  document.getElementById("aiSection").innerHTML = "";
+/* ---------- DOWNLOAD REPORT ---------- */
+function downloadReport() {
+  if (!window.lastResult) {
+    alert("Please analyze text before downloading the report.");
+    return;
+  }
+
+  const d = new Date();
+  let report = `
+INTELLIGENT TEXT ANALYZER REPORT
+--------------------------------
+Date: ${d.toLocaleString()}
+
+INPUT TEXT:
+${window.lastInputText}
+
+PLAGIARISM SCORE: ${window.lastResult.plagiarism_score}%
+
+AI GENERATED SCORE: ${window.lastResult.ai_result.score}%
+AI LABEL: ${window.lastResult.ai_result.label}
+
+FEEDBACK:
+${window.lastResult.feedback}
+${window.lastResult.ai_result.feedback}
+
+PLAGIARISED CONTENT:
+`;
+
+  window.lastResult.plagiarism_details.forEach(item => {
+    report += `- (${item.similarity}%) ${item.sentence}\n`;
+  });
+
+  report += "\nAI GENERATED CONTENT:\n";
+  window.lastResult.ai_result.sentences.forEach(s => {
+    report += `- ${s}\n`;
+  });
+
+  const blob = new Blob([report], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "analysis_report.txt";
+  link.click();
 }
