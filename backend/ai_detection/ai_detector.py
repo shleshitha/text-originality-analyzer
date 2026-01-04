@@ -1,56 +1,63 @@
-import nltk
-from nltk.tokenize import sent_tokenize, word_tokenize
-
-nltk.download("punkt")
+from .features import extract_features
 
 def detect_ai_text(text):
-    sentences = sent_tokenize(text)
-    words = word_tokenize(text)
+    features = extract_features(text)
 
-    if not sentences or not words:
+    if not features:
         return {
-            "ai_score": 0,
-            "label": "Unknown",
-            "ai_sentences": []
+            "score": 0,
+            "label": "Insufficient data",
+            "sentences": [],
+            "feedback": "Text too short for AI analysis."
         }
 
-    avg_sentence_len = sum(len(word_tokenize(s)) for s in sentences) / len(sentences)
-    avg_word_len = sum(len(w) for w in words) / len(words)
+    score = 0.0
 
-    sentence_lengths = [len(word_tokenize(s)) for s in sentences]
-    sentence_variance = max(sentence_lengths) - min(sentence_lengths)
+    if features["avg_sentence_len"] > 22:
+        score += 0.20
 
-    ai_probability = 0.0
+    if features["sentence_variance"] < 15:
+        score += 0.15
 
-    # Heuristic rules
-    if avg_sentence_len > 18:
-        ai_probability += 0.3
+    if features["lexical_diversity"] < 0.45:
+        score += 0.20
 
-    if avg_word_len > 5:
-        ai_probability += 0.2
+    if features["repetition_ratio"] > 0.08:
+        score += 0.15
 
-    if sentence_variance < 6:
-        ai_probability += 0.3
+    if features["function_word_ratio"] > 0.07:
+        score += 0.15
 
-    if text.count(",") > 6:
-        ai_probability += 0.2
+    if features["comma_density"] > 1.5:
+        score += 0.15
 
-    ai_probability = min(ai_probability, 1.0)
+    score = min(score, 1.0)
 
-    # Sentence-level AI suspicion
+    percent = round(score * 100, 2)
+
+    if percent >= 70:
+        label = "Likely AI-Generated"
+    elif percent >= 40:
+        label = "Mixed Writing Style"
+    else:
+        label = "Likely Human-Written"
+
     ai_sentences = []
-    for s in sentences:
-        if len(word_tokenize(s)) > 20:
-            ai_sentences.append(s)
-
-    label = (
-        "Likely AI-Generated" if ai_probability >= 0.7
-        else "Mixed Writing Style" if ai_probability >= 0.4
-        else "Human-Written"
-    )
+    for s in text.split("."):
+        if len(s.split()) > 25:
+            ai_sentences.append(s.strip())
 
     return {
-        "ai_score": int(ai_probability * 100),
+        "score": percent,
         "label": label,
-        "ai_sentences": ai_sentences
+        "sentences": ai_sentences,
+        "feedback": generate_feedback(percent)
     }
+
+def generate_feedback(score):
+    if score >= 70:
+        return "Text shows strong indicators of AI-generated writing. Consider rewriting in a more personal tone."
+    elif score >= 40:
+        return "Text contains a mix of human and AI characteristics."
+    else:
+        return "Text appears mostly human-written with natural variation."

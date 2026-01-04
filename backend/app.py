@@ -1,19 +1,19 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-from flask import send_file
-from report_generator import generate_report
 
-
-# Plagiarism imports
+# ----------------- PLAGIARISM -----------------
 from plagiarism.plagiarism_service import analyze_plagiarism
 from plagiarism.feedback import generate_plagiarism_feedback
 
-# AI detection imports
+# ----------------- AI DETECTION -----------------
 from ai_detection.ai_detector import detect_ai_text
-from ai_detection.ai_feedback import generate_ai_feedback
+
+# ----------------- REPORT -----------------
+from report_generator import generate_report
 
 app = Flask(__name__)
-CORS(app)  # Allow frontend to access backend
+CORS(app)  # allow frontend access
+
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
@@ -35,7 +35,7 @@ def analyze():
 
     # ---------- AI DETECTION ----------
     ai_result = detect_ai_text(text)
-    ai_feedback = generate_ai_feedback(ai_result["ai_score"])
+    # ai_result already contains: score, label, feedback, sentences
 
     # ---------- FINAL RESPONSE ----------
     return jsonify({
@@ -43,15 +43,21 @@ def analyze():
         "plagiarism_details": plagiarism_details,
         "feedback": plagiarism_feedback,
         "ai_result": {
-            "score": ai_result["ai_score"],
+            "score": ai_result["score"],
             "label": ai_result["label"],
-            "feedback": ai_feedback,
-            "sentences": ai_result["ai_sentences"]
+            "feedback": ai_result["feedback"],
+            "sentences": ai_result["sentences"]
         }
     })
+
+
 @app.route("/download-report", methods=["POST"])
 def download_report():
     data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
     filepath = generate_report(data)
     return send_file(filepath, as_attachment=True)
 
