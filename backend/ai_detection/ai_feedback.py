@@ -1,17 +1,7 @@
-def ai_feedback(score):
+def generate_feedback(score):
     if score >= 70:
-        return [
-            "High sentence uniformity detected",
-            "Low vocabulary variation",
-            "Repeated phrasing patterns"
-        ]
+        return "Text shows strong indicators of AI-generated writing. Consider rewriting in a more personal tone."
     elif score >= 40:
-        return [
-            "Some structured sentence patterns",
-            "Moderate repetition"
-        ]
+        return "Text contains a mix of human and AI characteristics."
     else:
-        return [
-            "Natural sentence variation",
-            "Good lexical diversity"
-        ]
+        return "Text appears mostly human-written with natural variation."
