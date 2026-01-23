@@ -3,7 +3,6 @@ from flask_cors import CORS
 
 # ----------------- PLAGIARISM -----------------
 from plagiarism.plagiarism_service import analyze_plagiarism
-from plagiarism.feedback import generate_plagiarism_feedback
 
 # ----------------- AI DETECTION -----------------
 from ai_detection.ai_detector import detect_ai_text
@@ -23,32 +22,36 @@ def analyze():
         return jsonify({"error": "No text provided"}), 400
 
     text = data["text"].strip()
-
     if not text:
         return jsonify({"error": "Empty text"}), 400
 
-    # ---------- PLAGIARISM ANALYSIS ----------
-    plagiarism_score, plagiarism_details = analyze_plagiarism(text)
-    plagiarism_feedback = generate_plagiarism_feedback(
-        plagiarism_score, plagiarism_details
-    )
+    # mode can be: "plagiarism" or "ai"
+    mode = data.get("mode")
 
-    # ---------- AI DETECTION ----------
-    ai_result = detect_ai_text(text)
-    # ai_result already contains: score, label, feedback, sentences
+    response = {"mode": mode}
 
-    # ---------- FINAL RESPONSE ----------
-    return jsonify({
-        "plagiarism_score": plagiarism_score,
-        "plagiarism_details": plagiarism_details,
-        "feedback": plagiarism_feedback,
-        "ai_result": {
+    # ---------- PLAGIARISM CHECK ----------
+    if mode == "plagiarism":
+        plagiarism_result = analyze_plagiarism(text)
+        response["plagiarism"] = plagiarism_result
+
+    # ---------- AI WRITING STYLE CHECK ----------
+    elif mode == "ai":
+        ai_result = detect_ai_text(text)
+        response["ai_result"] = {
             "score": ai_result["score"],
             "label": ai_result["label"],
             "feedback": ai_result["feedback"],
             "sentences": ai_result["sentences"]
         }
-    })
+
+    # ---------- INVALID MODE ----------
+    else:
+        return jsonify({
+            "error": "Invalid mode. Use 'plagiarism' or 'ai'."
+        }), 400
+
+    return jsonify(response)
 
 
 @app.route("/download-report", methods=["POST"])

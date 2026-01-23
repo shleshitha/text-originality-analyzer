@@ -48,8 +48,12 @@ def generate_report(data):
 
     if data["plagiarism_details"]:
         for item in data["plagiarism_details"]:
-            c.drawString(40, y, f"- {item['sentence'][:90]}")
+            c.drawString(
+                40, y,
+                f"- {item.get('sentence', 'Matched online content')} ({item.get('similarity', 0)}%)"
+            )
             y -= 12
+
     else:
         c.drawString(40, y, "None")
 
