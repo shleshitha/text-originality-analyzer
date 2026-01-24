@@ -94,16 +94,16 @@ function runAnalysis(mode) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text, mode })
   })
-  .then(res => res.json())
-  .then(data => {
-    hideLoading();
-    addFeedback(data, mode);
-  })
-  .catch(err => {
-    hideLoading();
-    console.error(err);
-    alert("Backend error. Check console.");
-  });
+    .then(res => res.json())
+    .then(data => {
+      hideLoading();
+      addFeedback(data, mode);
+    })
+    .catch(err => {
+      hideLoading();
+      console.error(err);
+      alert("Backend error. Check console.");
+    });
 }
 
 /* =========================
@@ -119,16 +119,12 @@ function addFeedback(data, mode) {
   /* ---------- PLAGIARISM ---------- */
   if (mode === "plagiarism") {
 
-    // ✅ NO PLAGIARISM
     if (!data.plagiarism.is_plagiarised) {
       box.innerHTML = `
         <h3>🟢 Plagiarism Check</h3>
         <p><b>Result:</b> Content appears original.</p>
       `;
-    }
-
-    // 🚨 PLAGIARISM FOUND
-    else {
+    } else {
       let detailsHTML = "";
 
       data.plagiarism.matches.forEach(item => {
@@ -157,30 +153,52 @@ function addFeedback(data, mode) {
 
   /* ---------- AI WRITING STYLE ---------- */
   if (mode === "ai") {
-    let aiDetailsHTML = "";
+    let patternHTML = "";
+    let sentenceHTML = "";
+
+    if (data.ai_result.patterns.length > 0) {
+      patternHTML = "<ul>";
+      data.ai_result.patterns.forEach(p => {
+        patternHTML += `<li>${p}</li>`;
+      });
+      patternHTML += "</ul>";
+    } else {
+      patternHTML = `<div class="none-text">No strong AI-style patterns detected.</div>`;
+    }
 
     if (data.ai_result.sentences.length > 0) {
       data.ai_result.sentences.forEach(sentence => {
-        aiDetailsHTML += `
+        sentenceHTML += `
           <div class="highlight-item-blue">
             ${sentence}
           </div>
         `;
       });
     } else {
-      aiDetailsHTML = `<div class="none-text">No AI-generated patterns detected.</div>`;
+      sentenceHTML = `<div class="none-text">No specific sentences flagged.</div>`;
     }
 
     box.innerHTML = `
       <h3>🤖 Writing Style Check</h3>
-      <p><b>Result:</b> ${data.ai_result.label}</p>
-      <p>${data.ai_result.feedback}</p>
 
-      <div class="highlight-header" onclick="toggleSection('${detailsId}')">
-        🔍 View Detected Patterns <span>▼</span>
+      <div class="score-card">
+        <b>AI-Style Likelihood:</b> ${data.ai_result.ai_likelihood}%
       </div>
-      <div class="highlight-body" id="${detailsId}" style="display:none;">
-        ${aiDetailsHTML}
+
+      <p>${data.ai_result.summary}</p>
+
+      <div class="highlight-header" onclick="toggleSection('${detailsId}_patterns')">
+        🧠 Detected Linguistic Patterns <span>▼</span>
+      </div>
+      <div class="highlight-body" id="${detailsId}_patterns" style="display:none;">
+        ${patternHTML}
+      </div>
+
+      <div class="highlight-header" onclick="toggleSection('${detailsId}_sentences')" style="margin-top:10px;">
+        📌 Example Sentences <span>▼</span>
+      </div>
+      <div class="highlight-body" id="${detailsId}_sentences" style="display:none;">
+        ${sentenceHTML}
       </div>
     `;
   }

@@ -1,34 +1,44 @@
 import re
-import math
 from collections import Counter
 
+FUNCTION_WORDS = {
+    "the","a","an","and","or","but","if","while","with","without",
+    "because","although","however","therefore","thus","moreover",
+    "to","of","in","on","at","by","for","from"
+}
+
 def extract_features(text):
-    sentences = [s.strip() for s in re.split(r'[.!?]', text) if s.strip()]
+    # Improved sentence detection
+    sentences = re.findall(r'[^.!?]+[.!?]', text)
     words = re.findall(r'\b\w+\b', text.lower())
 
-    if not sentences or not words:
+    # Minimum text requirement
+    if len(sentences) < 3 or len(words) < 30:
         return {}
 
     sentence_lengths = [len(s.split()) for s in sentences]
     avg_sentence_len = sum(sentence_lengths) / len(sentence_lengths)
 
     variance = sum((l - avg_sentence_len) ** 2 for l in sentence_lengths) / len(sentence_lengths)
+    normalized_variance = variance / (avg_sentence_len + 1e-6)
 
-    unique_words = len(set(words))
-    lexical_diversity = unique_words / len(words)
+    lexical_diversity = len(set(words)) / len(words)
 
-    repetition_ratio = max(Counter(words).values()) / len(words)
+    # Bigram repetition (strong AI indicator)
+    bigrams = list(zip(words, words[1:]))
+    bigram_counts = Counter(bigrams)
+    bigram_repetition = max(bigram_counts.values()) / len(bigrams)
 
-    function_words = {"and","or","but","because","therefore","however","moreover","thus","although"}
-    function_word_ratio = sum(1 for w in words if w in function_words) / len(words)
+    function_word_ratio = sum(1 for w in words if w in FUNCTION_WORDS) / len(words)
 
     comma_density = text.count(",") / len(sentences)
 
     return {
         "avg_sentence_len": avg_sentence_len,
-        "sentence_variance": variance,
+        "normalized_variance": normalized_variance,
         "lexical_diversity": lexical_diversity,
-        "repetition_ratio": repetition_ratio,
+        "bigram_repetition": bigram_repetition,
         "function_word_ratio": function_word_ratio,
-        "comma_density": comma_density
+        "comma_density": comma_density,
+        "sentence_lengths": sentence_lengths
     }

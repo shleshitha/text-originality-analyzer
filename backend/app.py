@@ -38,11 +38,12 @@ def analyze():
     # ---------- AI WRITING STYLE CHECK ----------
     elif mode == "ai":
         ai_result = detect_ai_text(text)
+
         response["ai_result"] = {
-            "score": ai_result["score"],
-            "label": ai_result["label"],
-            "feedback": ai_result["feedback"],
-            "sentences": ai_result["sentences"]
+            "ai_likelihood": ai_result.get("ai_likelihood", 0),
+            "patterns": ai_result.get("patterns", []),
+            "sentences": ai_result.get("sentences", []),
+            "summary": ai_result.get("summary", "")
         }
 
     # ---------- INVALID MODE ----------

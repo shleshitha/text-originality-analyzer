@@ -13,10 +13,10 @@ from nltk.tokenize import sent_tokenize
 # =====================================================
 # CONFIG
 # =====================================================
-SERPAPI_KEY = "cda1961bfe90faba4c7437324da0c80e41ebb92768fef78577e9fe07c82627ea"
+SERPAPI_KEY = "31482a539d990a8ba91d0bc0c5a5164b013419f11980b84c57fa2789ad99b996"
 
 TRUSTED_DOMAINS = (
-   "wikipedia.org",
+   "geeksforgeeks.org",
     "britannica.com",
     "freecodecamp.org",
     "howstuffworks.com",
