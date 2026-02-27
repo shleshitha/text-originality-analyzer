@@ -8,7 +8,7 @@ The system allows users to input or upload text, perform plagiarism detection us
 ---
 ## 🌐 Live Demo
 
-👉 [Click here to open the application](https://your-project-link.com)
+👉 [Click here to open the application](https://intelligent-text-analyzerr.vercel.app/)
 
 
 ## ⚙️ Technologies Used
