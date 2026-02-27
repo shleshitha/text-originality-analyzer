@@ -5,6 +5,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from difflib import SequenceMatcher
 import nltk
 import os
+import time
 
 nltk.download("punkt")
 from nltk.tokenize import sent_tokenize
@@ -16,8 +17,8 @@ from nltk.tokenize import sent_tokenize
 SERPAPI_KEY = "31482a539d990a8ba91d0bc0c5a5164b013419f11980b84c57fa2789ad99b996"
 
 TRUSTED_DOMAINS = (
-   "geeksforgeeks.org",
-    "britannica.com",
+   "wikipedia.org",
+    "geeksforgeeks.com",
     "freecodecamp.org",
     "howstuffworks.com",
     "docs.python.org"
@@ -50,7 +51,7 @@ def fetch_page_text(url):
     try:
         r = requests.get(
             url,
-            timeout=10,
+            timeout=20,
             headers={"User-Agent": "Mozilla/5.0"}
         )
         soup = BeautifulSoup(r.text, "html.parser")
@@ -66,7 +67,7 @@ def fetch_page_text(url):
 
 
 def serpapi_search(query):
-    """Google search via SerpAPI"""
+    """Google search via SerpAPI (SAFE VERSION)"""
     params = {
         "engine": "google",
         "q": query,
@@ -74,21 +75,32 @@ def serpapi_search(query):
         "num": 5
     }
 
-    r = requests.get(
-        "https://serpapi.com/search",
-        params=params,
-        timeout=10
-    )
+    try:
+        r = requests.get(
+            "https://serpapi.com/search",
+            params=params,
+            timeout=30   # ⬅️ increased
+        )
+        r.raise_for_status()
 
-    data = r.json()
-    urls = []
+        data = r.json()
+        urls = []
 
-    for item in data.get("organic_results", []):
-        link = item.get("link")
-        if link and is_trusted_source(link):
-            urls.append(link)
+        for item in data.get("organic_results", []):
+            link = item.get("link")
+            if link and is_trusted_source(link):
+                urls.append(link)
 
-    return list(set(urls))
+        return list(set(urls))
+
+    except requests.exceptions.ReadTimeout:
+        print("⚠️ SerpAPI timeout, skipping query")
+        return []
+
+    except Exception as e:
+        print("⚠️ SerpAPI error:", e)
+        return []
+
 
 
 def build_queries(sentence):
@@ -127,6 +139,8 @@ def analyze_plagiarism(text):
 
         for query in build_queries(sentence):
             urls.extend(serpapi_search(query))
+            time.sleep(1)   # ⬅️ CRITICAL (prevents throttling)
+
 
         urls = list(set(urls))  # deduplicate URLs
 
